@@ -15,8 +15,8 @@ class Game:
         self.background = pygame.transform.scale(self.background, (screen.get_width(), screen.get_height()))
 
         self.buildings = {
-            "player": Building(0, 450, 100, 150),
-            "enemy": Building(1000, 450, 100, 150)
+            "player": Building(0, 450, 100, 150, is_enemy=False),
+            "enemy": Building(1000, 450, 100, 150, is_enemy=True)
         } # WIDTH, HEIGHT Screen = 1280, 620
         self.units = []
         self.spawn_timer = 0
@@ -45,10 +45,11 @@ class Game:
         }
 
     def draw_health_text(self, building, x, y):
-        """Draw the health of a building as text."""
+        """Draw the health of a building as text at the specified coordinates."""
         health_text = self.font.render(f"{building.current_health}/{building.max_health}", True, (0, 0, 0))
-        self.screen.blit(health_text, (x + 50, y))
-    
+        self.screen.blit(health_text, (x, y))  # Use exact X and Y coordinates
+
+        
     def draw_gold_text(self):
         """Display the gold amount for both the player and enemy."""
         player_gold_text = self.font.render(f"Player Gold: {self.gold['player']}", True, (0, 0, 0))
@@ -65,7 +66,7 @@ class Game:
             if side == "player":
                 unit = Unit(100, 500, 40, 40, 2, 10, self.buildings["enemy"], (0, 0, 255), attack_cooldown=900, sprite=sprite)
             else:
-                unit = Unit(900, 500, 40, 40, -2, 10, self.buildings["player"], (255, 0, 0), attack_cooldown=900, sprite=sprite)
+                unit = Unit(900, 500, 40, 40, -2, 10, self.buildings["player"], (255, 0, 0), attack_cooldown=900, sprite=sprite, is_enemy=True)
 
             self.units.append(unit)
             self.gold[side] -= unit_cost  # Deduct gold after spawning
@@ -79,17 +80,19 @@ class Game:
             self.spawn_timer = 0
 
         # Update all units
-        for unit in self.units[:]:
+        for unit in self.units[:]:  # Iterate over a copy of the list to avoid modification issues
             unit.move()
+
             if not unit.alive:
+                # Award gold to the opponent for the kill before removing the unit
+                if unit.color == (0, 0, 255):  # If the unit is a player unit
+                    self.gold['enemy'] += 70
+                else:  # If the unit is an enemy unit
+                    self.gold['player'] += 70
+
+                # Remove the unit after awarding gold
                 self.units.remove(unit)
-                # Award gold to the opponent for the kill
-                if unit in self.units:  # Ensure it was alive
-                    if unit.color == (0, 0, 255):  # Player unit
-                        self.gold['enemy'] += 70
-                    else:  # Enemy unit
-                        self.gold['player'] += 70
-        
+            
         # Handle Combats
         self.handle_combat()
 
@@ -105,7 +108,7 @@ class Game:
         self.buildings["enemy"].draw(self.screen)
 
         # Draw health numbers for each building
-        self.draw_health_text(self.buildings["player"], 50, 400)  # Position near the player building
+        self.draw_health_text(self.buildings["player"], 100, 400)  # Position near the player building
         self.draw_health_text(self.buildings["enemy"], 1100, 400)  # Position near the enemy building
 
         # Draw gold text

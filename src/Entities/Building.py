@@ -3,7 +3,7 @@ import pygame
 from Utils import draw_health_bar
 
 class Building:
-    def __init__(self, x, y, width, height, max_health=4000, age=0, has_floor=False):
+    def __init__(self, x, y, width, height, max_health=4000, age=0, has_floor=False, is_enemy=False):
         self.x = x
         self.y = y
         self.width = width
@@ -15,6 +15,10 @@ class Building:
         
         # Load the base building sprite based on the age (e.g., 1.png, 2.png)
         self.base_sprite = pygame.image.load(f"./Assets/sprites/bases/{self.age + 1}.png")
+
+         # Flip the building horizontally if it's an enemy building
+        if is_enemy:
+            self.base_sprite = pygame.transform.flip(self.base_sprite, True, False)  # Flip horizontally
 
         # Load the turret sprite and floor sprite if applicable
         self.turret_sprite = pygame.image.load(f"./Assets/sprites/turrets/{self.age + 1}.png")
