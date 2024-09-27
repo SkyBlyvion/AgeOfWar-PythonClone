@@ -7,10 +7,17 @@ class Game:
     def __init__(self, screen, font):
         self.screen = screen
         self.font = font
+
+        # Load the background image
+        self.background = pygame.image.load(f"./Assets/sprites/background.png")
+
+        # Optionally scale the background to fit the window size
+        self.background = pygame.transform.scale(self.background, (screen.get_width(), screen.get_height()))
+
         self.buildings = {
-            "player": Building(50, 450, 100, 150),
-            "enemy": Building(650, 450, 100, 150)
-        }
+            "player": Building(0, 450, 100, 150),
+            "enemy": Building(1000, 450, 100, 150)
+        } # WIDTH, HEIGHT Screen = 1280, 620
         self.units = []
         self.spawn_timer = 0
 
@@ -40,14 +47,14 @@ class Game:
     def draw_health_text(self, building, x, y):
         """Draw the health of a building as text."""
         health_text = self.font.render(f"{building.current_health}/{building.max_health}", True, (0, 0, 0))
-        self.screen.blit(health_text, (x, y))
+        self.screen.blit(health_text, (x + 50, y))
     
     def draw_gold_text(self):
         """Display the gold amount for both the player and enemy."""
         player_gold_text = self.font.render(f"Player Gold: {self.gold['player']}", True, (0, 0, 0))
         enemy_gold_text = self.font.render(f"Enemy Gold: {self.gold['enemy']}", True, (0, 0, 0))
         self.screen.blit(player_gold_text, (50, 50))
-        self.screen.blit(enemy_gold_text, (650, 50))
+        self.screen.blit(enemy_gold_text, (1050, 50))
 
     def spawn_unit(self, side, unit_type):
         """Spawn a unit based on the age and type (1, 2, or 3)."""
@@ -56,9 +63,9 @@ class Game:
             age = self.current_age
             sprite = pygame.image.load(f"./Assets/sprites/troops/{self.unit_sprites[side][age][unit_type]}")
             if side == "player":
-                unit = Unit(150, 500, 40, 40, 2, 10, self.buildings["enemy"], (0, 0, 255), attack_cooldown=900, sprite=sprite)
+                unit = Unit(100, 500, 40, 40, 2, 10, self.buildings["enemy"], (0, 0, 255), attack_cooldown=900, sprite=sprite)
             else:
-                unit = Unit(600, 500, 40, 40, -2, 10, self.buildings["player"], (255, 0, 0), attack_cooldown=900, sprite=sprite)
+                unit = Unit(900, 500, 40, 40, -2, 10, self.buildings["player"], (255, 0, 0), attack_cooldown=900, sprite=sprite)
 
             self.units.append(unit)
             self.gold[side] -= unit_cost  # Deduct gold after spawning
@@ -90,13 +97,16 @@ class Game:
         """Draw all game elements."""
         self.screen.fill((255, 255, 255))  # Clear the screen
 
+        # Draw the background
+        self.screen.blit(self.background, (0, 0))  # Fill the entire screen with the background image
+
         # Draw buildings
         self.buildings["player"].draw(self.screen)
         self.buildings["enemy"].draw(self.screen)
 
         # Draw health numbers for each building
         self.draw_health_text(self.buildings["player"], 50, 400)  # Position near the player building
-        self.draw_health_text(self.buildings["enemy"], 650, 400)  # Position near the enemy building
+        self.draw_health_text(self.buildings["enemy"], 1100, 400)  # Position near the enemy building
 
         # Draw gold text
         self.draw_gold_text()

@@ -5,7 +5,7 @@ from Game import Game
 pygame.init()
 
 # Set up the game window
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1280, 620
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Age of War Clone")
 
