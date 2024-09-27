@@ -39,7 +39,6 @@ unit_menu_buttons = [
     pygame.Rect(WIDTH - 130, 50, 32, 32),  # Back arrow to return to the in-game menu
 ]
 
-
 # Game states
 GAME_PLAY = 'game_play'
 UNIT_MENU = 'unit_menu'
