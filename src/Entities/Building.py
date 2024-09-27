@@ -1,5 +1,7 @@
 import pygame
 
+from Utils import draw_health_bar
+
 class Building:
     def __init__(self, x, y, width, height, max_health=4000):
         self.x = x
@@ -18,8 +20,17 @@ class Building:
         pygame.draw.rect(surface, (0, 0, 0), (self.x, self.y, self.width, self.height))
 
         # Health bar
-        health_bar_width = 100
-        health_bar_height = 10
-        health_percentage = self.current_health / self.max_health
-        pygame.draw.rect(surface, (255, 0, 0), (self.x, self.y - 15, health_bar_width, health_bar_height))
-        pygame.draw.rect(surface, (0, 255, 0), (self.x, self.y - 15, health_bar_width * health_percentage, health_bar_height))
+        draw_health_bar(
+            surface,
+            self.x,
+            self.y - 15,
+            self.current_health,
+            self.max_health,
+        )
+
+        # # Health bar
+        # health_bar_width = 100
+        # health_bar_height = 10
+        # health_percentage = self.current_health / self.max_health
+        # pygame.draw.rect(surface, (255, 0, 0), (self.x, self.y - 15, health_bar_width, health_bar_height))
+        # pygame.draw.rect(surface, (0, 255, 0), (self.x, self.y - 15, health_bar_width * health_percentage, health_bar_height))

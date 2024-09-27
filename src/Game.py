@@ -1,10 +1,12 @@
 import pygame
+import os
 from Entities.Building import Building
 from Entities.Unit import Unit
 
 class Game:
-    def __init__(self, screen):
+    def __init__(self, screen, font):
         self.screen = screen
+        self.font = font
         self.buildings = {
             "player": Building(50, 450, 100, 150),
             "enemy": Building(650, 450, 100, 150)
@@ -12,20 +14,61 @@ class Game:
         self.units = []
         self.spawn_timer = 0
 
-    def spawn_unit(self, side):
-        """Spawn a unit for the player or the enemy."""
-        if side == "player":
-            unit = Unit(150, 500, 40, 40, 2, 10, self.buildings["enemy"])
-        else:
-            unit = Unit(600, 500, 40, 40, -2, 10, self.buildings["player"])
-        self.units.append(unit)
+        # Gold system for both player and enemy
+        self.gold = {"player": 1000, "enemy": 1000}
+
+        # Age system
+        self.ages = ["Stone Age", "Medieval Age", "Renaissance Age", "Modern Age", "Future Age"]
+        self.current_age = 0  # Start with Stone Age
+        self.unit_sprites = {
+            "player": {
+                0: ["1 1.png", "1 2.png", "1 3.png"],
+                1: ["2 1.png", "2 2.png", "2 3.png"],
+                2: ["3 1.png", "3 2.png", "3 3.png"],
+                3: ["4 1.png", "4 2.png", "4 3.png"],
+                4: ["5 1.png", "5 2.png", "5 3.png"]
+            },
+            "enemy": {
+                0: ["1 1.png", "1 2.png", "1 3.png"],
+                1: ["2 1.png", "2 2.png", "2 3.png"],
+                2: ["3 1.png", "3 2.png", "3 3.png"],
+                3: ["4 1.png", "4 2.png", "4 3.png"],
+                4: ["5 1.png", "5 2.png", "5 3.png"]
+            }
+        }
+
+    def draw_health_text(self, building, x, y):
+        """Draw the health of a building as text."""
+        health_text = self.font.render(f"{building.current_health}/{building.max_health}", True, (0, 0, 0))
+        self.screen.blit(health_text, (x, y))
+    
+    def draw_gold_text(self):
+        """Display the gold amount for both the player and enemy."""
+        player_gold_text = self.font.render(f"Player Gold: {self.gold['player']}", True, (0, 0, 0))
+        enemy_gold_text = self.font.render(f"Enemy Gold: {self.gold['enemy']}", True, (0, 0, 0))
+        self.screen.blit(player_gold_text, (50, 50))
+        self.screen.blit(enemy_gold_text, (650, 50))
+
+    def spawn_unit(self, side, unit_type):
+        """Spawn a unit based on the age and type (1, 2, or 3)."""
+        unit_cost = 50
+        if self.gold[side] >= unit_cost:
+            age = self.current_age
+            sprite = pygame.image.load(f"./Assets/sprites/troops/{self.unit_sprites[side][age][unit_type]}")
+            if side == "player":
+                unit = Unit(150, 500, 40, 40, 2, 10, self.buildings["enemy"], (0, 0, 255), attack_cooldown=900, sprite=sprite)
+            else:
+                unit = Unit(600, 500, 40, 40, -2, 10, self.buildings["player"], (255, 0, 0), attack_cooldown=900, sprite=sprite)
+
+            self.units.append(unit)
+            self.gold[side] -= unit_cost  # Deduct gold after spawning
 
     def update(self):
         """Update the game state."""
         self.spawn_timer += 1
         if self.spawn_timer >= 120:  # Spawn a unit every 2 seconds
-            self.spawn_unit("player")
-            self.spawn_unit("enemy")
+            self.spawn_unit("player", 0) # Pass unit_type (e.g., 0 for the first unit type in the current age)
+            self.spawn_unit("enemy", 0)
             self.spawn_timer = 0
 
         # Update all units
@@ -33,6 +76,15 @@ class Game:
             unit.move()
             if not unit.alive:
                 self.units.remove(unit)
+                # Award gold to the opponent for the kill
+                if unit in self.units:  # Ensure it was alive
+                    if unit.color == (0, 0, 255):  # Player unit
+                        self.gold['enemy'] += 70
+                    else:  # Enemy unit
+                        self.gold['player'] += 70
+        
+        # Handle Combats
+        self.handle_combat()
 
     def draw(self):
         """Draw all game elements."""
@@ -42,6 +94,54 @@ class Game:
         self.buildings["player"].draw(self.screen)
         self.buildings["enemy"].draw(self.screen)
 
+        # Draw health numbers for each building
+        self.draw_health_text(self.buildings["player"], 50, 400)  # Position near the player building
+        self.draw_health_text(self.buildings["enemy"], 650, 400)  # Position near the enemy building
+
+        # Draw gold text
+        self.draw_gold_text()
+
         # Draw units
         for unit in self.units:
             unit.draw(self.screen)
+
+    def handle_combat(self):
+        """Handle combat between friendly and enemy units."""
+        current_time = pygame.time.get_ticks()  # Get the current time in milliseconds
+
+        for i in range(len(self.units)):
+            for j in range(i + 1, len(self.units)):
+                unit_a = self.units[i]
+                unit_b = self.units[j]
+
+                # Check if both units are alive and on opposite sides
+                if unit_a.alive and unit_b.alive and unit_a.speed > 0 and unit_b.speed < 0:
+                    # Check for collision (units overlapping)
+                    if unit_a.x + unit_a.width >= unit_b.x and unit_b.x + unit_b.width >= unit_a.x:
+
+                        # Stop both units from moving if they are in combat
+                        unit_a.in_combat = True
+                        unit_b.in_combat = True
+
+                        # Check if unit A can attack
+                        if unit_a.can_attack(current_time):
+                            unit_b.take_damage(1)
+                            unit_a.last_attack_time = current_time  # Reset attack cooldown for unit A
+
+                        # Check if unit B can attack
+                        if unit_b.can_attack(current_time):
+                            unit_a.take_damage(1)
+                            unit_b.last_attack_time = current_time  # Reset attack cooldown for unit B
+
+                        # If unit A dies, unit B can resume movement
+                        if not unit_a.alive:
+                            unit_b.in_combat = False  # Unit B can resume moving
+                            print(f"Unit A died, Unit B resumes moving. Health: {unit_b.current_health}")
+
+                        # If unit B dies, unit A can resume movement
+                        if not unit_b.alive:
+                            unit_a.in_combat = False  # Unit A can resume moving
+                            print(f"Unit B died, Unit A resumes moving. Health: {unit_a.current_health}")
+
+
+

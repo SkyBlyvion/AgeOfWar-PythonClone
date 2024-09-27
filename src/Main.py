@@ -9,12 +9,16 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Age of War Clone")
 
+# Initialize font for displaying health numbers
+pygame.font.init()
+font = pygame.font.SysFont('Arial', 24)  # You can change 'Arial' and size as needed
+
 # Set up the game clock
 clock = pygame.time.Clock()
 FPS = 60
 
 # Initialize the game
-game = Game(screen)
+game = Game(screen, font)
 
 # Main game loop
 def main():

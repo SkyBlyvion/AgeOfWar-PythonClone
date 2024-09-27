@@ -3,6 +3,16 @@
 
 Welcome to the **Age of War Clone** project! This game is a 2D side-scroller inspired by the classic flash game *Age of War*, where two sides (player and enemy) send units to destroy each other's buildings. The player's goal is to spawn units, engage in combat, and destroy the enemy building located on the opposite side of the screen.
 
+
+now instead of autospawn units, i want to be able to spawn units with money(gold) ,we gain money by killing a ennemy unit, the ennemy gain money by killing our units. We start, me and the ennemy with 1000 gold; a Basic unit cost 50 gold . Killing a unit gave 70 gold. 
+
+Now we need 3 type of unit per age, with 5 age
+Units : (  1 1.png et 1 2.png et 1 3.png/ 2 1.png 2 2.png et 2 3.png ... 5 3.png ) 
+
+The stage are the era we are in, we start at stone age ( stage 1 ) .Then medieval age, Then renaissance age, then modern age, then future age. Each age has 3 units.
+
+i set the sprites in AOW>Assets>sprites>
+
 ---
 
 ## 📝 Project Structure
