@@ -1,0 +1,26 @@
+The project is a Python-based 2D strategy game, 
+inspired by the original Age of War, where the player 
+manages resources and fights against an enemy by spawning units, 
+upgrading their base, and advancing through different ages of technology.
+
+Built using the Pygame library, this game replicates the core mechanics 
+of the original flash game, while offering flexibility to expand its features.
+
+Game Objective:
+
+    The player's goal is to defend their base and destroy the enemy’s base 
+        by strategically deploying units, purchasing turrets, and advancing 
+        through five different technological ages.
+
+    As you defeat enemy units, you earn gold, which can be used to 
+        spawn more units, buy upgrades, and improve your defenses.
+
+Core Mechanics:
+ - Gameplay Structure:
+
+    The game is a side-scrolling strategy where two bases 
+        are positioned on opposite sides of the screen: the player's 
+        base on the left and the enemy's base on the right.
+
+    The battle takes place between these two bases, with units 
+        spawned from both sides moving toward the enemy base to deal damage.

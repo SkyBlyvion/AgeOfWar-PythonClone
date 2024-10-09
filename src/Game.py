@@ -43,6 +43,22 @@ class Game:
                 4: ["5 1.png", "5 2.png", "5 3.png"]
             }
         }
+        self.turret_sprites = {
+            "player": {
+                0: ["1.png", "2.png", "3.png"],
+                1: ["4.png", "5.png", "6.png"],
+                2: ["7.png", "8.png", "9.png"],
+                3: ["10.png", "11.png", "12.png"],
+                4: ["13.png", "14.png", "15.png"]
+            },
+            "enemy": {
+                0: ["1.png", "2.png", "3.png"],
+                1: ["4.png", "5.png", "6.png"],
+                2: ["7.png", "8.png", "9.png"],
+                3: ["10.png", "11.png", "12.png"],
+                4: ["13.png", "14.png", "15.png"]
+            }
+        }
 
     def draw_health_text(self, building, x, y):
         """Draw the health of a building as text at the specified coordinates."""
@@ -53,9 +69,9 @@ class Game:
     def draw_gold_text(self):
         """Display the gold amount for both the player and enemy."""
         player_gold_text = self.font.render(f"Player Gold: {self.gold['player']}", True, (0, 0, 0))
-        enemy_gold_text = self.font.render(f"Enemy Gold: {self.gold['enemy']}", True, (0, 0, 0))
+        #enemy_gold_text = self.font.render(f"Enemy Gold: {self.gold['enemy']}", True, (0, 0, 0))
         self.screen.blit(player_gold_text, (50, 50))
-        self.screen.blit(enemy_gold_text, (1050, 50))
+        #self.screen.blit(enemy_gold_text, (1050, 50))
 
     def spawn_unit(self, side, unit_type):
         """Spawn a unit based on the age and type (1, 2, or 3)."""
@@ -70,6 +86,23 @@ class Game:
 
             self.units.append(unit)
             self.gold[side] -= unit_cost  # Deduct gold after spawning
+    
+
+    # def to spawn turrets
+    def spawn_turret(self, side, turret_type):
+        """ Spawn a turret based on the age and building upgrade."""
+        turret_cost = 100
+        if self.gold[side] >= turret_cost:
+            age = self.current_age
+            sprite = pygame.image.load(f"./Assets/sprites/turrets/{self.turret_sprites[side][age][turret_type]}")
+            if side == "player":
+                
+
+
+
+
+
+   
 
     def update(self):
         """Update the game state."""
