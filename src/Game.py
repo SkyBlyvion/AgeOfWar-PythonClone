@@ -2,6 +2,7 @@ import pygame
 import os
 from Entities.Building import Building
 from Entities.Unit import Unit
+from Entities.Turret import Turret
 
 class Game:
     def __init__(self, screen, font):
@@ -19,6 +20,10 @@ class Game:
             "enemy": Building(1000, 450, 100, 150, is_enemy=True)
         } # WIDTH, HEIGHT Screen = 1280, 620
         self.units = []
+        self.turrets = {
+            "player": [],
+            "enemy": []
+        }
         self.spawn_timer = 0
 
         # Gold system for both player and enemy
@@ -60,12 +65,20 @@ class Game:
             }
         }
 
+    def upgrade_building(self, side):
+        """Allow the player to upgrade their building."""
+        upgrade_cost = 200
+        if self.gold[side] >= upgrade_cost:
+            building = self.buildings[side]
+            if building.upgrades < 2:  # Allow a max of 2 upgrades
+                building.upgrade_building()
+                self.gold[side] -= upgrade_cost
+
     def draw_health_text(self, building, x, y):
         """Draw the health of a building as text at the specified coordinates."""
         health_text = self.font.render(f"{building.current_health}/{building.max_health}", True, (0, 0, 0))
         self.screen.blit(health_text, (x, y))  # Use exact X and Y coordinates
 
-        
     def draw_gold_text(self):
         """Display the gold amount for both the player and enemy."""
         player_gold_text = self.font.render(f"Player Gold: {self.gold['player']}", True, (0, 0, 0))
@@ -88,24 +101,44 @@ class Game:
             self.gold[side] -= unit_cost  # Deduct gold after spawning
     
 
-    # def to spawn turrets
+    # # def to spawn turrets
+    # def spawn_turret(self, side, turret_type):
+    #     """Spawn a turret on the building."""
+    #     turret_cost = 100
+    #     if self.gold[side] >= turret_cost:
+    #         age = self.current_age
+    #         sprite = pygame.image.load(f"./Assets/sprites/turrets/{self.turret_sprites[side][age][turret_type]}")
+    #         building = self.buildings[side]  # Get the building for the side
+            
+    #         # Calculate the turret position based on the building's position
+    #         turret_x = building.x + building.width // 2 - 20  # Center the turret on the building
+    #         turret_y = building.y - 40  # Place the turret above the building
+            
+    #         # Create a new turret instance
+    #         turret = Turret(turret_x, turret_y, 40, 40, attack_damage=5, attack_cooldown=1000, sprite=sprite)
+            
+    #         # Add the turret to the list of turrets for that side
+    #         self.turrets[side].append(turret)
+    #         self.gold[side] -= turret_cost
+
     def spawn_turret(self, side, turret_type):
-        """ Spawn a turret based on the age and building upgrade."""
+        """Spawn a turret on the building, if the building has available slots."""
         turret_cost = 100
-        if self.gold[side] >= turret_cost:
+        building = self.buildings[side]
+        if self.gold[side] >= turret_cost and building.can_add_turret():
             age = self.current_age
             sprite = pygame.image.load(f"./Assets/sprites/turrets/{self.turret_sprites[side][age][turret_type]}")
-            if side == "player":
-                
+            turret_x = building.x + building.width // 2 - 20
+            turret_y = building.y - 40
+            turret = Turret(turret_x, turret_y, 40, 40, attack_damage=5, attack_cooldown=1000, sprite=sprite)
+            building.turrets.append(turret)
+            self.gold[side] -= turret_cost
 
-
-
-
-
-   
+            
 
     def update(self):
         """Update the game state."""
+        current_time = pygame.time.get_ticks()
         self.spawn_timer += 1
         if self.spawn_timer >= 120:  # Spawn a unit every 2 seconds
             self.spawn_unit("player", 0) # Pass unit_type (e.g., 0 for the first unit type in the current age)
@@ -125,7 +158,18 @@ class Game:
 
                 # Remove the unit after awarding gold
                 self.units.remove(unit)
-            
+        
+        # Handle turret attacks
+        for turret in self.turrets["player"]:
+            for enemy_unit in [unit for unit in self.units if unit.color == (255, 0, 0)]:
+                if turret.can_attack(current_time):
+                    turret.attack(enemy_unit)
+
+        for turret in self.turrets["enemy"]:
+            for player_unit in [unit for unit in self.units if unit.color == (0, 0, 255)]:
+                if turret.can_attack(current_time):
+                    turret.attack(player_unit)
+
         # Handle Combats
         self.handle_combat()
 
@@ -150,6 +194,13 @@ class Game:
         # Draw units
         for unit in self.units:
             unit.draw(self.screen)
+
+        # Draw turrets
+        for turret in self.turrets["player"]:
+            turret.draw(self.screen)
+
+        for turret in self.turrets["enemy"]:
+            turret.draw(self.screen)
 
     def handle_combat(self):
         """Handle combat between friendly and enemy units."""
